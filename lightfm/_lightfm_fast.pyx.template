@@ -322,14 +322,22 @@ cdef inline flt compute_prediction_from_repr(flt *user_repr,
                                              int no_components) nogil:
 
     cdef int i
-    cdef flt result
+    cdef flt result, biases, numerator, norm_user, norm_item
 
     # Biases
-    result = user_repr[no_components] + item_repr[no_components]
+    biases = user_repr[no_components] + item_repr[no_components]
+
+    numerator = 0
+    norm_user = 0
+    norm_item = 0
 
     # Latent factor dot product
     for i in range(no_components):
-        result += user_repr[i] * item_repr[i]
+        norm_user += user_repr[i] * user_repr[i]
+        norm_item += item_repr[i] * item_repr[i]
+        numerator += user_repr[i] * item_repr[i]
+
+    result = biases + numerator / (sqrt(norm_item) * sqrt(norm_user))
 
     return result
 
